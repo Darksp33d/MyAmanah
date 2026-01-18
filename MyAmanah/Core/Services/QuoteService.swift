@@ -74,7 +74,7 @@ final class QuoteService: ObservableObject {
         
         do {
             savedContent = try await supabase.fetch(from: "saved_content") { query in
-                query.eq("user_id", value: userId.uuidString).order("saved_at", ascending: false)
+                query.eq("user_id", value: userId.uuidString).order("saved_at", ascending: false) as! PostgrestFilterBuilder
             }
         } catch {
             print("Error fetching saved content: \(error)")

@@ -31,13 +31,13 @@ final class SpacesService: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         do {
-            allSpaces = try await supabase.fetch(from: "spaces") { $0.is_("deleted_at", value: nil).order("member_count", ascending: false) }
+            allSpaces = try await supabase.fetch(from: "spaces") { $0.is("deleted_at", value: nil) }
         } catch { self.error = error }
     }
     
     func fetchJoinedSpaces(for userId: UUID) async {
         do {
-            let memberships: [SpaceMember] = try await supabase.fetch(from: "space_members") { $0.eq("user_id", value: userId.uuidString).is_("banned_at", value: nil) }
+            let memberships: [SpaceMember] = try await supabase.fetch(from: "space_members") { $0.eq("user_id", value: userId.uuidString).is("banned_at", value: nil) }
             let spaceIds = memberships.map { $0.spaceId.uuidString }
             if !spaceIds.isEmpty {
                 joinedSpaces = try await supabase.fetch(from: "spaces") { $0.in("id", values: spaceIds) }
@@ -70,7 +70,7 @@ final class SpacesService: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         do {
-            currentSpacePosts = try await supabase.fetch(from: "posts") { $0.eq("space_id", value: spaceId.uuidString).eq("moderation_status", value: "approved").is_("deleted_at", value: nil).order("created_at", ascending: false) }
+            currentSpacePosts = try await supabase.fetch(from: "posts") { $0.eq("space_id", value: spaceId.uuidString).eq("moderation_status", value: "approved").is("deleted_at", value: nil) }
         } catch { self.error = error }
     }
     
@@ -89,7 +89,10 @@ final class SpacesService: ObservableObject {
     
     // MARK: - Comments
     func fetchComments(for postId: UUID) async throws -> [Comment] {
-        try await supabase.fetch(from: "comments") { $0.eq("post_id", value: postId.uuidString).eq("moderation_status", value: "approved").is_("deleted_at", value: nil).order("created_at", ascending: true) }
+        try await supabase.fetch(from: "comments") { builder in
+            builder.eq("post_id", value: postId.uuidString)
+                .eq("moderation_status", value: "approved").is("deleted_at", value: nil)
+        }
     }
     
     func createComment(postId: UUID, authorId: UUID, body: String, parentId: UUID? = nil, depth: Int = 0) async throws -> Comment {
@@ -122,3 +125,4 @@ final class SpacesService: ObservableObject {
         try await supabase.insert(into: "reports", value: report)
     }
 }
+
