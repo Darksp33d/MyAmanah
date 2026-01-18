@@ -1,5 +1,26 @@
 import SwiftUI
 import Combine
+import UserNotifications
+internal import PostgREST
+
+// MARK: - Update DTOs
+struct ProfileUpdate: Codable {
+    let displayName: String
+    let onboardingCompleted: Bool
+    
+    enum CodingKeys: String, CodingKey {
+        case displayName = "display_name"
+        case onboardingCompleted = "onboarding_completed"
+    }
+}
+
+struct CycleSettingsUpdate: Codable {
+    let defaultCycleLength: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case defaultCycleLength = "default_cycle_length"
+    }
+}
 
 enum OnboardingStep {
     case welcome
@@ -95,20 +116,12 @@ final class OnboardingViewModel: ObservableObject {
         defer { isLoading = false }
         
         do {
-            let updates: [String: Any] = [
-                "display_name": displayName,
-                "onboarding_completed": true
-            ]
-            
+            let updates = ProfileUpdate(displayName: displayName, onboardingCompleted: true)
             try await supabase.update(table: "users", value: updates) {
                 $0.eq("id", value: user.id.uuidString)
             }
             
-            // Update cycle settings
-            let settingsUpdates: [String: Any] = [
-                "default_cycle_length": cycleLength
-            ]
-            
+            let settingsUpdates = CycleSettingsUpdate(defaultCycleLength: cycleLength)
             try await supabase.update(table: "user_settings", value: settingsUpdates) {
                 $0.eq("user_id", value: user.id.uuidString)
             }

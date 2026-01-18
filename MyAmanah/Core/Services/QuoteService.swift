@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+internal import PostgREST
 
 // MARK: - Quote Service
 @MainActor

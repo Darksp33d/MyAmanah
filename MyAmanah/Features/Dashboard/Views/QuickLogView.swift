@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 struct QuickLogView: View {
     @Binding var isPresented: Bool

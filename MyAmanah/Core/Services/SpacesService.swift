@@ -1,5 +1,15 @@
 import Foundation
 import Combine
+internal import PostgREST
+
+// MARK: - Update DTO
+struct SoftDeleteUpdate: Codable {
+    let deletedAt: String
+    
+    enum CodingKeys: String, CodingKey {
+        case deletedAt = "deleted_at"
+    }
+}
 
 // MARK: - Spaces Service
 @MainActor
@@ -72,7 +82,8 @@ final class SpacesService: ObservableObject {
     }
     
     func deletePost(_ post: Post) async throws {
-        try await supabase.update(table: "posts", value: ["deleted_at": ISO8601DateFormatter().string(from: Date())]) { $0.eq("id", value: post.id.uuidString) }
+        let update = SoftDeleteUpdate(deletedAt: ISO8601DateFormatter().string(from: Date()))
+        try await supabase.update(table: "posts", value: update) { $0.eq("id", value: post.id.uuidString) }
         currentSpacePosts.removeAll { $0.id == post.id }
     }
     

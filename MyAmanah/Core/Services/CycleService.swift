@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+internal import PostgREST
 
 // MARK: - Cycle Service
 @MainActor
@@ -25,8 +26,8 @@ final class CycleService: ObservableObject {
             logs = try await supabase.fetch(from: "cycle_logs") { query in
                 query
                     .eq("user_id", value: userId.uuidString)
-                    .order("log_date", ascending: false)
             }
+            logs.sort { $0.logDate > $1.logDate }
             calculateStatistics()
         } catch {
             self.error = error

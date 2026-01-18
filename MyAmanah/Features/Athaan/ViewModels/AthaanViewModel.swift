@@ -1,5 +1,19 @@
 import SwiftUI
 import Combine
+internal import PostgREST
+
+// MARK: - Update DTO
+struct PrayerSettingsUpdate: Codable {
+    let locationMode: String
+    let calculationMethod: String
+    let asrMethod: String
+    
+    enum CodingKeys: String, CodingKey {
+        case locationMode = "location_mode"
+        case calculationMethod = "calculation_method"
+        case asrMethod = "asr_method"
+    }
+}
 
 @MainActor
 final class AthaanViewModel: ObservableObject {
@@ -91,14 +105,13 @@ final class AthaanSettingsViewModel: ObservableObject {
     }
     
     func save() async {
-        // Save settings to Supabase
         guard let userId = supabase.currentUser?.id else { return }
         
-        let settings = [
-            "location_mode": locationMode.rawValue,
-            "calculation_method": calculationMethod.rawValue,
-            "asr_method": asrMethod.rawValue
-        ]
+        let settings = PrayerSettingsUpdate(
+            locationMode: locationMode.rawValue,
+            calculationMethod: calculationMethod.rawValue,
+            asrMethod: asrMethod.rawValue
+        )
         
         try? await supabase.update(table: "user_settings", value: settings) {
             $0.eq("user_id", value: userId.uuidString)

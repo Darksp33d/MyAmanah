@@ -77,9 +77,7 @@ final class SupabaseManager: ObservableObject {
             password: password
         )
         
-        guard let authUser = authResponse.user else {
-            throw AuthError.signUpFailed
-        }
+        let authUser = authResponse.user
         
         // Create user profile
         let newUser = User(
@@ -217,3 +215,4 @@ extension SupabaseManager {
             .execute()
     }
 }
+
