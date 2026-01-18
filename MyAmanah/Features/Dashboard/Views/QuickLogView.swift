@@ -74,8 +74,6 @@ struct QuickLogView: View {
                 }
             }
             
-            Spacer()
-            
             // Save Button
             MAButton("Save", isLoading: viewModel.isLoading) {
                 Task {
@@ -83,8 +81,8 @@ struct QuickLogView: View {
                     isPresented = false
                 }
             }
+            .padding(.top, MASpacing.md)
         }
-        .padding(.top, MASpacing.md)
     }
     
     private func periodFlowButton(_ flow: PeriodFlow) -> some View {

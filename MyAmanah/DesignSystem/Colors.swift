@@ -5,8 +5,9 @@ import SwiftUI
 
 extension Color {
     // MARK: - Primary Palette
-    static let backgroundPrimary = Color(hex: "E5D7C4")
-    static let surfaceContrast = Color(hex: "CFBB99")
+    static let backgroundPrimary = Color(hex: "EDE5D8")  // Warm cream background
+    static let surfaceCard = Color(hex: "E5D7C4")        // Card/surface color
+    static let surfaceContrast = Color(hex: "CFBB99")    // Darker contrast elements
     static let accentGreenLight = Color(hex: "889063")
     static let accentGreenDark = Color(hex: "354024")
     static let accentBrown = Color(hex: "4C3D19")

@@ -59,11 +59,11 @@ struct MACard<Content: View>: View {
     private var backgroundColor: Color {
         switch variant {
         case .default, .interactive:
-            return .backgroundPrimary
+            return .surfaceCard
         case .elevated:
             return .surfaceContrast
         case .featured:
-            return .backgroundPrimary
+            return .surfaceCard
         }
     }
     

@@ -37,13 +37,15 @@ struct MABottomSheet<Content: View>: View {
                             .padding(.bottom, MASpacing.lg)
                     }
                     
-                    // Content
-                    content
-                        .padding(.horizontal, MASpacing.xl)
-                        .padding(.bottom, MASpacing.xxl)
+                    // Content in ScrollView for proper sizing
+                    ScrollView {
+                        content
+                            .padding(.horizontal, MASpacing.xl)
+                    }
+                    .frame(maxHeight: UIScreen.main.bounds.height * 0.6)
                 }
-                .frame(maxWidth: .infinity)
-                .background(Color.backgroundPrimary)
+                .padding(.bottom, MASpacing.xxl)
+                .background(Color.surfaceCard)
                 .cornerRadius(MACornerRadius.extraLarge, corners: [.topLeft, .topRight])
                 .offset(y: offset)
                 .gesture(
@@ -67,7 +69,7 @@ struct MABottomSheet<Content: View>: View {
             }
         }
         .animation(MAAnimation.emphasis, value: isPresented)
-        .ignoresSafeArea()
+        .ignoresSafeArea(.keyboard)
     }
     
     private func dismiss() {

@@ -31,7 +31,7 @@ struct MAInputField: View {
             .foregroundColor(.textPrimary)
             .padding(.horizontal, MASpacing.lg)
             .frame(height: 48)
-            .background(Color.backgroundPrimary)
+            .background(Color.surfaceCard)
             .cornerRadius(MACornerRadius.medium)
             .overlay(
                 RoundedRectangle(cornerRadius: MACornerRadius.medium)
@@ -102,7 +102,7 @@ struct MATextArea: View {
                     }
             }
             .frame(minHeight: minHeight)
-            .background(Color.backgroundPrimary)
+            .background(Color.surfaceCard)
             .cornerRadius(MACornerRadius.medium)
             .overlay(
                 RoundedRectangle(cornerRadius: MACornerRadius.medium)
