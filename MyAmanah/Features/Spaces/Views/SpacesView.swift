@@ -7,33 +7,36 @@ struct SpacesView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // Tab Selector
-                Picker("", selection: $selectedTab) {
-                    Text("My Spaces").tag(0)
-                    Text("Discover").tag(1)
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal, MASpacing.lg)
-                .padding(.vertical, MASpacing.md)
-                
-                if selectedTab == 0 {
-                    mySpacesView
-                } else {
-                    discoverView
+            ScrollView {
+                VStack(spacing: 0) {
+                    // Tab Selector
+                    Picker("", selection: $selectedTab) {
+                        Text("My Spaces").tag(0)
+                        Text("Discover").tag(1)
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal, MASpacing.lg)
+                    .padding(.vertical, MASpacing.md)
+                    
+                    if selectedTab == 0 {
+                        mySpacesContent
+                    } else {
+                        discoverContent
+                    }
                 }
             }
             .background(Color.backgroundPrimary)
             .navigationTitle("Spaces")
-            .searchable(text: $searchText, prompt: "Search spaces")
+            .navigationBarTitleDisplayMode(.inline)
+            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search spaces")
         }
         .task {
             await viewModel.loadData()
         }
     }
     
-    // MARK: - My Spaces
-    private var mySpacesView: some View {
+    // MARK: - My Spaces Content
+    private var mySpacesContent: some View {
         Group {
             if viewModel.joinedSpaces.isEmpty {
                 MAEmptyState(
@@ -45,33 +48,29 @@ struct SpacesView: View {
                     selectedTab = 1
                 }
             } else {
-                ScrollView {
-                    LazyVStack(spacing: MASpacing.md) {
-                        ForEach(filteredJoinedSpaces) { space in
-                            NavigationLink(destination: SpaceDetailView(space: space)) {
-                                SpaceCard(space: space)
-                            }
-                            .buttonStyle(.plain)
+                LazyVStack(spacing: MASpacing.md) {
+                    ForEach(filteredJoinedSpaces) { space in
+                        NavigationLink(destination: SpaceDetailView(space: space)) {
+                            SpaceCard(space: space)
                         }
+                        .buttonStyle(.plain)
                     }
-                    .padding(.horizontal, MASpacing.lg)
-                    .padding(.vertical, MASpacing.md)
                 }
+                .padding(.horizontal, MASpacing.lg)
+                .padding(.bottom, MASpacing.md)
             }
         }
     }
     
-    // MARK: - Discover
-    private var discoverView: some View {
-        ScrollView {
-            LazyVStack(alignment: .leading, spacing: MASpacing.xl) {
-                ForEach(SpaceCategory.allCases, id: \.self) { category in
-                    categorySection(category)
-                }
+    // MARK: - Discover Content
+    private var discoverContent: some View {
+        LazyVStack(alignment: .leading, spacing: MASpacing.xl) {
+            ForEach(SpaceCategory.allCases, id: \.self) { category in
+                categorySection(category)
             }
-            .padding(.horizontal, MASpacing.lg)
-            .padding(.vertical, MASpacing.md)
         }
+        .padding(.horizontal, MASpacing.lg)
+        .padding(.bottom, MASpacing.md)
     }
     
     private func categorySection(_ category: SpaceCategory) -> some View {

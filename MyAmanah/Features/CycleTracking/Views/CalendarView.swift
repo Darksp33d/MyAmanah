@@ -28,6 +28,7 @@ struct CycleCalendarView: View {
             .padding(.horizontal, MASpacing.lg)
             .background(Color.backgroundPrimary)
             .navigationTitle("Track")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { selectedDate = Date() }) {

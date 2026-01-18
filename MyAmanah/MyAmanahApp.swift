@@ -1,4 +1,5 @@
 import SwiftUI
+import Supabase
 
 @main
 struct MyAmanahApp: App {
@@ -21,6 +22,22 @@ struct MyAmanahApp: App {
                 }
             }
             .preferredColorScheme(.light)
+            .onOpenURL { url in
+                Task {
+                    await handleDeepLink(url)
+                }
+            }
+        }
+    }
+    
+    private func handleDeepLink(_ url: URL) async {
+        // Handle Supabase auth callback
+        if url.scheme == AppConfig.DeepLink.scheme && url.host == AppConfig.DeepLink.host {
+            do {
+                try await supabaseManager.client.auth.session(from: url)
+            } catch {
+                print("Error handling auth callback: \(error)")
+            }
         }
     }
     

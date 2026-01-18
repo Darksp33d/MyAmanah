@@ -42,6 +42,8 @@ final class OnboardingViewModel: ObservableObject {
     @Published var authError: String?
     @Published var isLoading = false
     @Published var showSignIn = false
+    @Published var showEmailConfirmation = false
+    @Published var pendingDisplayName: String?
     
     // Profile
     @Published var displayName = ""
@@ -88,8 +90,14 @@ final class OnboardingViewModel: ObservableObject {
         defer { isLoading = false }
         
         do {
-            try await supabase.signUp(email: email, password: password, displayName: displayName.isEmpty ? nil : displayName)
-            nextStep()
+            let result = try await supabase.signUp(email: email, password: password, displayName: displayName.isEmpty ? nil : displayName)
+            
+            if result.needsEmailConfirmation {
+                pendingDisplayName = displayName.isEmpty ? nil : displayName
+                showEmailConfirmation = true
+            } else {
+                nextStep()
+            }
         } catch {
             authError = "Failed to create account. Please try again."
         }

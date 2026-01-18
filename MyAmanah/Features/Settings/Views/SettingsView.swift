@@ -93,6 +93,7 @@ struct SettingsView: View {
             .scrollContentBackground(.hidden)
             .background(Color.backgroundPrimary)
             .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showSubscription) {
                 SubscriptionView()
             }

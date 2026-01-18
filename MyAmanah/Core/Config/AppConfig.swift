@@ -61,6 +61,8 @@ enum AppConfig {
     // MARK: - Deep Links
     enum DeepLink {
         static let scheme = "myamanah"
+        static let host = "auth"
+        static let callbackURL = URL(string: "\(scheme)://\(host)/callback")!
         static let dashboard = "\(scheme)://dashboard"
         static let track = "\(scheme)://track"
         static let athaan = "\(scheme)://athaan"

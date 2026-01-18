@@ -30,6 +30,7 @@ struct DashboardView: View {
             }
             .background(Color.backgroundPrimary)
             .navigationTitle("Home")
+            .navigationBarTitleDisplayMode(.inline)
             .refreshable {
                 await viewModel.refresh()
             }

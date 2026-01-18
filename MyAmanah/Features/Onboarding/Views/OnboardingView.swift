@@ -192,6 +192,13 @@ struct OnboardingView: View {
         .sheet(isPresented: $viewModel.showSignIn) {
             SignInView(onComplete: { viewModel.nextStep() })
         }
+        .alert("Check Your Email", isPresented: $viewModel.showEmailConfirmation) {
+            Button("OK") {
+                viewModel.showSignIn = true
+            }
+        } message: {
+            Text("We've sent a confirmation link to \(viewModel.email). Please confirm your email and then sign in.")
+        }
     }
     
     // MARK: - Profile Setup
@@ -379,45 +386,99 @@ struct SignInView: View {
     @State private var password = ""
     @State private var isLoading = false
     @State private var error: String?
+    @State private var showForgotPassword = false
     
     var body: some View {
         NavigationStack {
             VStack(spacing: MASpacing.xl) {
+                Spacer()
+                
+                // Header
+                VStack(spacing: MASpacing.md) {
+                    Image(systemName: "person.circle.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.accentGreenDark)
+                    
+                    Text("Welcome Back")
+                        .font(MAFont.displayMedium)
+                        .foregroundColor(.textPrimary)
+                    
+                    Text("Sign in to access your account")
+                        .font(MAFont.bodyMedium)
+                        .foregroundColor(.textSecondary)
+                }
+                
+                // Form
                 VStack(spacing: MASpacing.lg) {
-                    MAInputField(label: "Email", placeholder: "your@email.com", text: $email, keyboardType: .emailAddress)
-                    MAInputField(label: "Password", placeholder: "Your password", text: $password, isSecure: true)
+                    MAInputField(
+                        label: "Email",
+                        placeholder: "your@email.com",
+                        text: $email,
+                        keyboardType: .emailAddress,
+                        textContentType: .emailAddress
+                    )
+                    
+                    MAInputField(
+                        label: "Password",
+                        placeholder: "Your password",
+                        text: $password,
+                        isSecure: true
+                    )
                     
                     if let error = error {
-                        Text(error).font(MAFont.bodySmall).foregroundColor(.statusError)
+                        Text(error)
+                            .font(MAFont.bodySmall)
+                            .foregroundColor(.statusError)
                     }
                 }
                 .padding(.horizontal, MASpacing.xl)
                 
-                MAButton("Sign In", isLoading: isLoading) {
-                    Task {
-                        isLoading = true
-                        defer { isLoading = false }
-                        do {
-                            try await SupabaseManager.shared.signIn(email: email, password: password)
-                            dismiss()
-                            onComplete()
-                        } catch {
-                            self.error = "Invalid email or password"
+                // Actions
+                VStack(spacing: MASpacing.md) {
+                    MAButton("Sign In", isLoading: isLoading) {
+                        Task {
+                            isLoading = true
+                            error = nil
+                            defer { isLoading = false }
+                            do {
+                                try await SupabaseManager.shared.signIn(email: email, password: password)
+                                dismiss()
+                                onComplete()
+                            } catch {
+                                self.error = "Invalid email or password"
+                            }
                         }
                     }
+                    
+                    Button("Forgot Password?") {
+                        showForgotPassword = true
+                    }
+                    .font(MAFont.labelMedium)
+                    .foregroundColor(.accentGreenDark)
                 }
                 .padding(.horizontal, MASpacing.xl)
                 
                 Spacer()
-            }
-            .padding(.top, MASpacing.xxl)
-            .background(Color.backgroundPrimary)
-            .navigationTitle("Sign In")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") { dismiss() }
+                
+                // Cancel
+                Button("Cancel") {
+                    dismiss()
                 }
+                .font(MAFont.labelMedium)
+                .foregroundColor(.textTertiary)
+                .padding(.bottom, MASpacing.xxl)
+            }
+            .background(Color.backgroundPrimary)
+            .alert("Reset Password", isPresented: $showForgotPassword) {
+                TextField("Email", text: $email)
+                Button("Send Reset Link") {
+                    Task {
+                        try? await SupabaseManager.shared.resetPassword(email: email)
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Enter your email to receive a password reset link.")
             }
         }
     }

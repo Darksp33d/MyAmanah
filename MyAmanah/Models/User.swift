@@ -119,6 +119,40 @@ struct UserSettings: Codable {
         case updatedAt = "updated_at"
     }
     
+    init(
+        id: UUID,
+        userId: UUID,
+        defaultCycleLength: Int,
+        fertileWindowEnabled: Bool,
+        locationLatitude: Double?,
+        locationLongitude: Double?,
+        locationName: String?,
+        locationMode: LocationMode,
+        calculationMethod: PrayerCalculationMethod,
+        asrMethod: AsrCalculationMethod,
+        notificationSettings: NotificationSettings,
+        analyticsEnabled: Bool,
+        crashReportingEnabled: Bool,
+        createdAt: Date,
+        updatedAt: Date
+    ) {
+        self.id = id
+        self.userId = userId
+        self.defaultCycleLength = defaultCycleLength
+        self.fertileWindowEnabled = fertileWindowEnabled
+        self.locationLatitude = locationLatitude
+        self.locationLongitude = locationLongitude
+        self.locationName = locationName
+        self.locationMode = locationMode
+        self.calculationMethod = calculationMethod
+        self.asrMethod = asrMethod
+        self.notificationSettings = notificationSettings
+        self.analyticsEnabled = analyticsEnabled
+        self.crashReportingEnabled = crashReportingEnabled
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+    
     static var `default`: UserSettings {
         UserSettings(
             id: UUID(),
@@ -137,6 +171,24 @@ struct UserSettings: Codable {
             createdAt: Date(),
             updatedAt: Date()
         )
+    }
+    
+    init(userId: UUID) {
+        self.id = UUID()
+        self.userId = userId
+        self.defaultCycleLength = 28
+        self.fertileWindowEnabled = false
+        self.locationLatitude = nil
+        self.locationLongitude = nil
+        self.locationName = nil
+        self.locationMode = .auto
+        self.calculationMethod = .isna
+        self.asrMethod = .standard
+        self.notificationSettings = .default
+        self.analyticsEnabled = true
+        self.crashReportingEnabled = true
+        self.createdAt = Date()
+        self.updatedAt = Date()
     }
 }
 

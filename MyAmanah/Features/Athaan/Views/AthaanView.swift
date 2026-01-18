@@ -29,6 +29,7 @@ struct AthaanView: View {
             }
             .background(Color.backgroundPrimary)
             .navigationTitle("Athaan")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { showSettings = true }) {

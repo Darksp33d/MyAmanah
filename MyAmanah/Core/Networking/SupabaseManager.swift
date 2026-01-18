@@ -32,7 +32,7 @@ final class SupabaseManager: ObservableObject {
             switch event {
             case .initialSession, .signedIn:
                 if let session = session {
-                    await loadCurrentUser(authId: session.user.id)
+                    await handleSignIn(session: session)
                 }
             case .signedOut:
                 currentUser = nil
@@ -45,6 +45,30 @@ final class SupabaseManager: ObservableObject {
                 }
             default:
                 break
+            }
+        }
+    }
+    
+    private func handleSignIn(session: Session) async {
+        // Try to load existing user profile
+        do {
+            let user: User = try await client
+                .from("users")
+                .select()
+                .eq("auth_id", value: session.user.id.uuidString)
+                .single()
+                .execute()
+                .value
+            
+            currentUser = user
+            isAuthenticated = true
+        } catch {
+            // User profile doesn't exist - create it (happens after email confirmation)
+            do {
+                try await createUserProfile(authId: session.user.id, displayName: nil)
+            } catch {
+                print("Error creating user profile: \(error)")
+                isAuthenticated = false
             }
         }
     }
@@ -68,20 +92,52 @@ final class SupabaseManager: ObservableObject {
     }
     
     // MARK: - Auth Methods
-    func signUp(email: String, password: String, displayName: String?) async throws {
+    
+    struct SignUpResult {
+        let needsEmailConfirmation: Bool
+        let user: Supabase.User?
+    }
+    
+    func signUp(email: String, password: String, displayName: String?) async throws -> SignUpResult {
         isLoading = true
         defer { isLoading = false }
         
         let authResponse = try await client.auth.signUp(
             email: email,
-            password: password
+            password: password,
+            redirectTo: AppConfig.DeepLink.callbackURL
         )
         
-        let authUser = authResponse.user
+        // Check if email confirmation is required
+        // If session is nil, email confirmation is pending
+        if authResponse.session == nil {
+            return SignUpResult(needsEmailConfirmation: true, user: authResponse.user)
+        }
+        
+        // User is authenticated, create profile
+        try await createUserProfile(authId: authResponse.user.id, displayName: displayName)
+        
+        return SignUpResult(needsEmailConfirmation: false, user: authResponse.user)
+    }
+    
+    func createUserProfile(authId: UUID, displayName: String?) async throws {
+        // Check if user profile already exists
+        let existingUsers: [User] = try await client
+            .from("users")
+            .select()
+            .eq("auth_id", value: authId.uuidString)
+            .execute()
+            .value
+        
+        if !existingUsers.isEmpty {
+            // Profile already exists
+            await loadCurrentUser(authId: authId)
+            return
+        }
         
         // Create user profile
         let newUser = User(
-            authId: authUser.id,
+            authId: authId,
             displayName: displayName,
             timezone: TimeZone.current.identifier
         )
@@ -91,12 +147,23 @@ final class SupabaseManager: ObservableObject {
             .insert(newUser)
             .execute()
         
+        // Fetch the created user to get the ID
+        let createdUser: User = try await client
+            .from("users")
+            .select()
+            .eq("auth_id", value: authId.uuidString)
+            .single()
+            .execute()
+            .value
+        
         // Create default settings
-        let settings = UserSettings.default
+        let settings = UserSettings(userId: createdUser.id)
         try await client
             .from("user_settings")
             .insert(settings)
             .execute()
+        
+        await loadCurrentUser(authId: authId)
     }
     
     func signIn(email: String, password: String) async throws {
